@@ -49,6 +49,10 @@ func isValidMACAddress(mac string) bool {
 	return re.MatchString(mac)
 }
 func getMacAddress(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		fmt.Printf("missing arguments")
+		return
+	}
 	origin := args[0]
 	mac_adress := strings.Replace(strings.Replace(strings.Replace(origin, "-", "", -1), ".", "", -1), ":", "", -1)
 

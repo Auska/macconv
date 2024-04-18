@@ -36,12 +36,20 @@ func init() {
 
 func convertIPAddress() func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			fmt.Printf("missing arguments")
+			return
+		}
 		cidr(args[0])
 	}
 }
 func cidr(str string) {
 	addrString := ipaddr.NewIPAddressString(str)
 	addr := addrString.GetAddress()
+	if addr == nil {
+		fmt.Printf("Invalid IP address: %s\n", str)
+		return
+	}
 	version := addrString.GetIPVersion()
 	segments := addr.GetSegments()
 	bitLength := addr.GetBitCount()
