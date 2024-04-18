@@ -62,16 +62,18 @@ func checkPort(ipStr, portStr string) {
 	if version == ipaddr.IPv6 {
 		target = fmt.Sprintf("[%s]:%d", addr, port) // 如果是IPv6，则调整格式
 	}
+	count := 0
+	for count < 5 {
+		// 尝试连接到目标主机的指定端口
+		conn, err := net.DialTimeout("tcp", target, 2*time.Second)
+		if err != nil {
+			fmt.Printf("Port %d on %s is close\n", port, ipStr)
+		} else {
+			fmt.Printf("Port %d on %s is open\n", port, ipStr)
+			count++
+			conn.Close()
+		}
+		time.Sleep(time.Second)
 
-	// 尝试连接到目标主机的指定端口
-	conn, err := net.DialTimeout("tcp", target, 2*time.Second)
-	if err != nil {
-		fmt.Printf("port unreachable")
-		return
 	}
-	defer conn.Close()
-
-	// 连接成功，端口开放
-	fmt.Printf("Port %d on %s is open\n", port, ipStr)
-	return
 }
