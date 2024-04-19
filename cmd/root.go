@@ -33,7 +33,9 @@ var rootCmd = &cobra.Command{
 	Short: "Parse mac address",
 	Long: `Used to convert mac addresses between different devices. 
 For example:
-	macconv mac 00:00:00:00:00:00
+	macconv mac 00:11:22:33:44:55
+	macconv ip 192.168.1.1/24
+	macconv tcp 192.168.1.1 22
 `,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
