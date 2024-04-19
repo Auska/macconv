@@ -27,7 +27,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/seancfoley/ipaddress-go/ipaddr"
 	"github.com/spf13/cobra"
 )
 
@@ -62,9 +61,7 @@ func init() {
 }
 func checkPort(ipStr, portStr string) {
 
-	addrString := ipaddr.NewIPAddressString(ipStr)
-	addr := addrString.GetAddress()
-	if addr == nil {
+	if net.ParseIP(ipStr) == nil {
 		fmt.Printf("invalid IP address")
 		return
 	}
@@ -75,10 +72,11 @@ func checkPort(ipStr, portStr string) {
 		return
 	}
 
-	version := addrString.GetIPVersion()
-	target := fmt.Sprintf("%s:%d", ipStr, port) // 默认使用IPv4格式
-	if version == ipaddr.IPv6 {
-		target = fmt.Sprintf("[%s]:%d", addr, port) // 如果是IPv6，则调整格式
+	var target string
+	if net.ParseIP(ipStr).To4() == nil {
+		target = fmt.Sprintf("%s:%d", ipStr, port) // 默认使用IPv4格式
+	} else {
+		target = fmt.Sprintf("[%s]:%d", ipStr, port) // 如果是IPv6，则调整格式
 	}
 	count := 0
 	for count < 5 {

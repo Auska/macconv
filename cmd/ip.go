@@ -23,8 +23,8 @@ package cmd
 
 import (
 	"fmt"
+	"net"
 
-	"github.com/seancfoley/ipaddress-go/ipaddr"
 	"github.com/spf13/cobra"
 )
 
@@ -58,33 +58,36 @@ func convertIPAddress() func(cmd *cobra.Command, args []string) {
 			fmt.Printf("missing arguments")
 			return
 		}
-		cidr(args[0])
+		first, last, mask, err := calculateCIDRInfo(args[0])
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+
+		fmt.Println("CIDR Address Range:", first, "-", last)
+		fmt.Println("Subnet Mask:", mask)
+		fmt.Println("Network ID:", first)
 	}
 }
-func cidr(str string) {
-	addrString := ipaddr.NewIPAddressString(str)
-	addr := addrString.GetAddress()
-	if addr == nil {
-		fmt.Printf("Invalid IP address: %s\n", str)
-		return
+func calculateCIDRInfo(cidr string) (string, string, string, error) {
+	ip, ipnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return "", "", "", err
 	}
-	version := addrString.GetIPVersion()
-	segments := addr.GetSegments()
-	bitLength := addr.GetBitCount()
-	size := addr.GetCount()
-	prefixLen := addr.GetNetworkPrefixLen()
-	mask := addr.GetNetworkMask()
 
-	// three different ways to get the network address
-	networkAddr, _ := addr.Mask(mask)
-	networkAddr = networkAddr.WithoutPrefixLen()
-	networkAddrAnotherWay := addr.GetLower().WithoutPrefixLen()
-	zeroHost, _ := addr.ToZeroHost()
-	networkAddrOneMoreWay := zeroHost.WithoutPrefixLen()
+	// 计算网络号
+	network := ip.Mask(ipnet.Mask)
 
-	fmt.Printf("%v address: %v\nprefix length: %v\nbit length: %v\nsegments: %v\n"+
-		"size: %v\nnetwork mask: %v\nnetwork address: %v\n\n",
-		version, addr, prefixLen, bitLength, segments, size, mask, networkAddr)
+	// 计算地址段
+	first := network
+	last := net.IP(make([]byte, len(network)))
+	copy(last, network)
+	for i := range last {
+		last[i] |= ^ipnet.Mask[i]
+	}
 
-	_, _ = networkAddrAnotherWay, networkAddrOneMoreWay
+	// 转换掩码为字符串
+	mask := net.IP(ipnet.Mask).String()
+
+	return first.String(), last.String(), mask, nil
 }
