@@ -81,11 +81,12 @@ func checkPort(ipStr, portStr string) {
 	count := 0
 	for count < 5 {
 		// 尝试连接到目标主机的指定端口
+		now := time.Now()
 		conn, err := net.DialTimeout("tcp", target, 2*time.Second)
 		if err != nil {
-			fmt.Printf("Port %d on %s is close\n", port, ipStr)
+			fmt.Printf("%v Port %d on %s is close\n", now.Format(time.RFC3339), port, ipStr)
 		} else {
-			fmt.Printf("Port %d on %s is open\n", port, ipStr)
+			fmt.Printf("%v Port %d on %s is open\n", now.Format(time.RFC3339), port, ipStr)
 			count++
 			conn.Close()
 		}
