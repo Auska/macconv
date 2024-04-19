@@ -34,8 +34,8 @@ var versionCmd = &cobra.Command{
 	Long:  `Used to display information such as version.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("version 0.1.3")
-		fmt.Println("author LuoDan")
-		fmt.Println("E-Mail luodan0709@live.cn")
+		fmt.Println("author  LuoDan")
+		fmt.Println("E-Mail  luodan0709@live.cn")
 	},
 }
 
