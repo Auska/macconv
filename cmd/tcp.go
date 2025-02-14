@@ -62,13 +62,13 @@ func init() {
 func checkPort(ipStr, portStr string) {
 
 	if net.ParseIP(ipStr) == nil {
-		fmt.Printf("invalid IP address")
+		fmt.Printf("error: invalid IP address.")
 		return
 	}
 
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		fmt.Printf("invalid port")
+		fmt.Printf("error: invalid port.")
 		return
 	}
 

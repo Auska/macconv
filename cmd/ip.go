@@ -55,7 +55,7 @@ func init() {
 func convertIPAddress() func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {
-			fmt.Printf("missing arguments")
+			fmt.Printf("errot: missing arguments.")
 			return
 		}
 		first, last, mask, err := calculateCIDRInfo(args[0])

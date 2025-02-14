@@ -31,7 +31,7 @@ func isValidMACAddress(mac string) bool {
 
 func getMacAddress(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
-		fmt.Println("missing arguments")
+		fmt.Println("error: missing arguments.")
 		return
 	}
 	origin := args[0]
@@ -42,7 +42,7 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 	macAddress = strings.ToLower(macAddress)
 
 	if !isValidMACAddress(macAddress) {
-		fmt.Println("invalid mac address")
+		fmt.Println("error: invalid mac address.")
 		return
 	}
 
