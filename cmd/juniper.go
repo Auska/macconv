@@ -1,0 +1,63 @@
+/*
+Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+
+*/
+package cmd
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/spf13/cobra"
+)
+
+// juniperCmd represents the juniper command
+var juniperCmd = &cobra.Command{
+	Use:   "juniper",
+	Short: "Juniper subscribers.",
+	Long: `Juniper subscribers.`,
+	Run: juniper_text,
+}
+
+func init() {
+	rootCmd.AddCommand(juniperCmd)
+}
+
+func juniper_text(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		fmt.Println("error: missing arguments.")
+		return
+	}
+
+	filePath := args[0]
+	file, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println("error: ", err)
+		return
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if idx := strings.Index(line, "IP Address:"); idx != -1 {
+			fmt.Print("\n")
+			fmt.Print(strings.TrimSpace(line[idx+len("IP Address: "):]))
+			fmt.Print("\t")
+		}
+		if idx := strings.Index(line, "MAC Address: "); idx != -1 {
+			fmt.Print(strings.TrimSpace(line[idx+len("MAC Address: "):]))
+			fmt.Print("\t")
+		}
+		if idx := strings.Index(line, "IPv4 Input Filter Name: "); idx != -1 {
+			fmt.Print(strings.TrimSpace(line[idx+len("IPv4 Input Filter Name: "):]))
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("error: ", err)
+		return
+	}
+}
