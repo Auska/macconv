@@ -14,29 +14,25 @@ var ipCmd = &cobra.Command{
 	Long: `CIDR mask conversion. For example:
 
 macconv ip 192.168.1.1/24`,
-	Run: convertIPAddress(),
+	Run: convertIPAddress,
 }
 
 func init() {
 	rootCmd.AddCommand(ipCmd)
 }
 
-func convertIPAddress() func(cmd *cobra.Command, args []string) {
-	return func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Printf("errot: missing arguments.")
-			return
-		}
-		first, last, mask, err := calculateCIDRInfo(args[0])
-		if err != nil {
-			fmt.Println("Error:", err)
-			return
-		}
-
-		fmt.Println("CIDR Address Range:", first, "-", last)
-		fmt.Println("Subnet Mask:", mask)
-		fmt.Println("Network ID:", first)
+func convertIPAddress(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		fmt.Printf("errot: missing arguments.")
 	}
+	first, last, mask, err := calculateCIDRInfo(args[0])
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	fmt.Println("CIDR Address Range:", first, "-", last)
+	fmt.Println("Subnet Mask:", mask)
+	fmt.Println("Network ID:", first)
 }
 func calculateCIDRInfo(cidr string) (string, string, string, error) {
 	ip, ipnet, err := net.ParseCIDR(cidr)

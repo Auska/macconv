@@ -16,19 +16,21 @@ var tcpCmd = &cobra.Command{
 	Long: `Check if the host port is open. For example:
 
 macconv tcp 192.168.1.1 22`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
-			fmt.Printf("missing arguments")
-			return
-		}
-		checkPort(args[0], args[1])
-	},
+	Run: checkPort,
 }
 
 func init() {
 	rootCmd.AddCommand(tcpCmd)
 }
-func checkPort(ipStr, portStr string) {
+func checkPort(cmd *cobra.Command, args []string) {
+	
+	if len(args) != 2 {
+		fmt.Printf("missing arguments")
+		return
+	}
+
+	ipStr := args[0]
+	portStr := args[1]
 
 	if net.ParseIP(ipStr) == nil {
 		fmt.Printf("error: invalid IP address.")
