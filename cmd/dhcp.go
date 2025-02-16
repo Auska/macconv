@@ -13,7 +13,11 @@ import (
 var dhcpCmd = &cobra.Command{
 	Use:   "dhcp",
 	Short: "DHCP option 43 conversion",
-	Long: `Commonly used for configuring DHCP servers, converting IP addresses to hexadecimal strings, and transforming them into PXE and ACS formats.`,
+	Long: `
+Commonly used for configuring DHCP servers, converting IP addresses to hexadecimal strings, and transforming them into PXE and ACS formats.
+For example:
+
+	macconv dhcp 192.168.1.1`,
 	Run: dhcp,
 }
 

@@ -17,9 +17,10 @@ import (
 var ipCmd = &cobra.Command{
 	Use:   "ip",
 	Short: "CIDR mask conversion",
-	Long: `CIDR mask conversion. For example:
+	Long: `
+CIDR mask conversion. For example:
 
-macconv ip 192.168.1.1/24`,
+	macconv ip 192.168.1.1/24`,
 	Run: convertIPAddress,
 }
 
@@ -29,7 +30,7 @@ func init() {
 
 func convertIPAddress(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
-		fmt.Printf("errot: missing arguments.")
+		fmt.Printf("Error: missing arguments.")
 		cmd.Help()
 		os.Exit(1)
 	}

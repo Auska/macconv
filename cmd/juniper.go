@@ -18,7 +18,10 @@ import (
 var juniperCmd = &cobra.Command{
 	Use:   "juniper",
 	Short: "Juniper subscribers.",
-	Long: `Juniper subscribers.`,
+	Long: `
+Juniper subscribers. For example:
+
+	macconv juniper <file_path>`,
 	Run: juniper_text,
 }
 
@@ -28,7 +31,7 @@ func init() {
 
 func juniper_text(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
-		fmt.Println("error: missing arguments.")
+		fmt.Println("Error: missing arguments.")
 		cmd.Help()
 		os.Exit(1)
 	}
@@ -36,7 +39,7 @@ func juniper_text(cmd *cobra.Command, args []string) {
 	filePath := args[0]
 	file, err := os.Open(filePath)
 	if err != nil {
-		fmt.Println("error: ", err)
+		fmt.Println("Error: ", err)
 		cmd.Help()
 		os.Exit(1)
 	}
@@ -60,7 +63,7 @@ func juniper_text(cmd *cobra.Command, args []string) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println("error: ", err)
+		fmt.Println("Error: ", err)
 		return
 	}
 }

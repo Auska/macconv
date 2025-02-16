@@ -18,7 +18,10 @@ import (
 var macCmd = &cobra.Command{
 	Use:   "mac",
 	Short: "Convert mac address",
-	Long:  `Convert mac address`,
+	Long:  `
+Convert mac address to different formats. For example:
+
+	macconv mac 001122334455`,
 	Run:   getMacAddress,
 }
 
@@ -37,7 +40,7 @@ func isValidMACAddress(mac string) bool {
 
 func getMacAddress(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
-		fmt.Println("error: missing arguments.")
+		fmt.Println("Error: missing arguments.")
 		cmd.Help()
 		os.Exit(1)
 	}
@@ -49,7 +52,7 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 	macAddress = strings.ToLower(macAddress)
 
 	if !isValidMACAddress(macAddress) {
-		fmt.Println("error: invalid mac address.")
+		fmt.Println("Error: invalid mac address.")
 		cmd.Help()
 		os.Exit(1)
 	}
