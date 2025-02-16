@@ -1,7 +1,8 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024-2025 Auska <luodan0709@live.cn>
 
 */
+
 package cmd
 
 import (
