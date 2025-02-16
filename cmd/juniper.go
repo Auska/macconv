@@ -29,14 +29,16 @@ func init() {
 func juniper_text(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		fmt.Println("error: missing arguments.")
-		return
+		cmd.Help()
+		os.Exit(1)
 	}
 
 	filePath := args[0]
 	file, err := os.Open(filePath)
 	if err != nil {
 		fmt.Println("error: ", err)
-		return
+		cmd.Help()
+		os.Exit(1)
 	}
 	defer file.Close()
 

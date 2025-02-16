@@ -8,6 +8,7 @@ package cmd
 import (
 	"fmt"
 	"net"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -29,10 +30,14 @@ func init() {
 func convertIPAddress(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		fmt.Printf("errot: missing arguments.")
+		cmd.Help()
+		os.Exit(1)
 	}
 	first, last, mask, err := calculateCIDRInfo(args[0])
 	if err != nil {
 		fmt.Println("Error:", err)
+		cmd.Help()
+		os.Exit(1)
 	}
 
 	fmt.Println("CIDR Address Range:", first, "-", last)

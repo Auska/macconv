@@ -10,6 +10,7 @@ import (
 	"net"
 	"strconv"
 	"time"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -31,7 +32,8 @@ func checkPort(cmd *cobra.Command, args []string) {
 	
 	if len(args) != 2 {
 		fmt.Printf("missing arguments")
-		return
+		cmd.Help()
+		os.Exit(1)
 	}
 
 	ipStr := args[0]
@@ -39,13 +41,15 @@ func checkPort(cmd *cobra.Command, args []string) {
 
 	if net.ParseIP(ipStr) == nil {
 		fmt.Printf("error: invalid IP address.")
-		return
+		cmd.Help()
+		os.Exit(1)
 	}
 
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
 		fmt.Printf("error: invalid port.")
-		return
+		cmd.Help()
+		os.Exit(1)
 	}
 
 	var target string

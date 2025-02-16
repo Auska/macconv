@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -37,7 +38,8 @@ func isValidMACAddress(mac string) bool {
 func getMacAddress(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		fmt.Println("error: missing arguments.")
-		return
+		cmd.Help()
+		os.Exit(1)
 	}
 	origin := args[0]
 	// Remove all separators and convert to lowercase
@@ -48,7 +50,8 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 
 	if !isValidMACAddress(macAddress) {
 		fmt.Println("error: invalid mac address.")
-		return
+		cmd.Help()
+		os.Exit(1)
 	}
 
 	fmt.Println(macAddress)
