@@ -1,3 +1,8 @@
+/*
+Copyright © 2024-2025 Auska <luodan0709@live.cn>
+
+*/
+
 package cmd
 
 import (
@@ -44,10 +49,10 @@ func ipToHexBytes(ip net.IP) string {
 // 转换为PXE格式
 func toPXEFormat(ips []net.IP) string {
 	var hexString string
-	hexString += "80" // PXE format identifier
+	hexString += "80"                              // PXE format identifier
 	hexString += fmt.Sprintf("%02x", len(ips)*4+3) // Length of the following data
-	hexString += "0000"                             // Fixed value
-	hexString += fmt.Sprintf("%02x", len(ips))      // Number of IPs
+	hexString += "0000"                            // Fixed value
+	hexString += fmt.Sprintf("%02x", len(ips))     // Number of IPs
 	for _, ip := range ips {
 		ipHex := ipToHex(ip)
 		hexString += ipHex
@@ -58,7 +63,7 @@ func toPXEFormat(ips []net.IP) string {
 // 转换为ACS格式
 func toACSFormat(ips []net.IP) string {
 	var hexString string
-	hexString += "01" // ACS format identifier
+	hexString += "01"                            // ACS format identifier
 	hexString += fmt.Sprintf("%02x", len(ips)*4) // Length of the following data (each IP is 4 bytes)
 	for _, ip := range ips {
 		ipHex := ipToHex(ip)
@@ -70,10 +75,10 @@ func toACSFormat(ips []net.IP) string {
 // 转换为PXE格式（每个字节的十六进制表示）
 func toPXEFormatBytes(ips []net.IP) string {
 	var hexString string
-	hexString += "0x80" // PXE format identifier
+	hexString += "0x80"                               // PXE format identifier
 	hexString += fmt.Sprintf(" 0x%02x", len(ips)*4+3) // Length of the following data
-	hexString += " 0x00 0x00"                             // Fixed value
-	hexString += fmt.Sprintf(" 0x%02x", len(ips))      // Number of IPs
+	hexString += " 0x00 0x00"                         // Fixed value
+	hexString += fmt.Sprintf(" 0x%02x", len(ips))     // Number of IPs
 	for _, ip := range ips {
 		ipHex := ipToHexBytes(ip)
 		hexString += " " + ipHex
@@ -84,7 +89,7 @@ func toPXEFormatBytes(ips []net.IP) string {
 // 转换为ACS格式（每个字节的十六进制表示）
 func toACSFormatBytes(ips []net.IP) string {
 	var hexString string
-	hexString += "0x01" // ACS format identifier
+	hexString += "0x01"                             // ACS format identifier
 	hexString += fmt.Sprintf(" 0x%02x", len(ips)*4) // Length of the following data (each IP is 4 bytes)
 	for _, ip := range ips {
 		ipHex := ipToHexBytes(ip)

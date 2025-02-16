@@ -7,9 +7,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -18,11 +18,11 @@ import (
 var macCmd = &cobra.Command{
 	Use:   "mac",
 	Short: "Convert mac address",
-	Long:  `
+	Long: `
 Convert mac address to different formats. For example:
 
 	macconv mac 001122334455`,
-	Run:   getMacAddress,
+	Run: getMacAddress,
 }
 
 func init() {
@@ -61,7 +61,7 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 	fmt.Println(convertMacAddress(macAddress, 2, ":"))
 	fmt.Println(convertMacAddress(macAddress, 4, "."))
 	fmt.Println(convertMacAddress(macAddress, 4, "-"))
-	
+
 	fmt.Println(strings.ToUpper(macAddress))
 	fmt.Println(strings.ToUpper(convertMacAddress(macAddress, 2, ":")))
 	fmt.Println(strings.ToUpper(convertMacAddress(macAddress, 4, ".")))

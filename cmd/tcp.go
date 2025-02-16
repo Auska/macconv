@@ -8,9 +8,9 @@ package cmd
 import (
 	"fmt"
 	"net"
+	"os"
 	"strconv"
 	"time"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,7 @@ func init() {
 	rootCmd.AddCommand(tcpCmd)
 }
 func checkPort(cmd *cobra.Command, args []string) {
-	
+
 	if len(args) != 2 {
 		fmt.Printf("Error: missing arguments")
 		cmd.Help()
