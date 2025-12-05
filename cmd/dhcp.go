@@ -103,14 +103,18 @@ func toACSFormatBytes(ips []net.IP) string {
 func dhcp(cmd *cobra.Command, args []string) {
 	if len(args) < 1 || len(args) > 2 {
 		logger.PrintValidationError("invalid number of arguments, expected 1 or 2 IP addresses")
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 
 	ips, err := parseIPAddresses(args)
 	if err != nil {
 		logger.PrintErrorWithMessage("failed to parse IP addresses", err)
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 

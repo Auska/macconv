@@ -55,7 +55,9 @@ func validateMACAddress(mac string) error {
 func getMacAddress(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		logger.PrintValidationError("missing MAC address argument")
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 	
@@ -67,7 +69,9 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 	
 	if err := validateMACAddress(macAddress); err != nil {
 		logger.PrintErrorWithMessage("invalid MAC address", err)
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 

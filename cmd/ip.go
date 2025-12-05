@@ -33,7 +33,9 @@ func init() {
 func convertIPAddress(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		logger.PrintValidationError("missing CIDR address argument")
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 	
@@ -43,7 +45,9 @@ func convertIPAddress(cmd *cobra.Command, args []string) {
 	info, err := calculateCIDRInfo(cidr)
 	if err != nil {
 		logger.PrintErrorWithMessage("failed to parse CIDR address", err)
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 

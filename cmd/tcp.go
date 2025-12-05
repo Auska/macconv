@@ -37,7 +37,9 @@ func init() {
 func checkPort(cmd *cobra.Command, args []string) {
 	if len(args) != 2 {
 		logger.PrintValidationError("missing arguments: IP address or hostname and port required")
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 
@@ -48,13 +50,17 @@ func checkPort(cmd *cobra.Command, args []string) {
 	ips, err := net.LookupIP(host)
 	if err != nil {
 		logger.PrintValidationError(fmt.Sprintf("failed to resolve hostname: %s - %v", host, err))
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 	
 	if len(ips) == 0 {
 		logger.PrintValidationError(fmt.Sprintf("no IP addresses found for hostname: %s", host))
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 	
@@ -65,7 +71,9 @@ func checkPort(cmd *cobra.Command, args []string) {
 	port, err := strconv.Atoi(portStr)
 	if err != nil || port < 1 || port > 65535 {
 		logger.PrintValidationError(fmt.Sprintf("invalid port number: %s", portStr))
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 		return
 	}
 

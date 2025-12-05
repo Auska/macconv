@@ -46,7 +46,9 @@ For example:
 			os.Exit(0)
 		}
 		// 如果没有版本标志，显示帮助
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			logger.PrintErrorWithMessage("failed to show help", err)
+		}
 	},
 }
 
