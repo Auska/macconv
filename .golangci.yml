@@ -36,30 +36,48 @@ linters-settings:
       - whyNoLint
       - wrapperFunc
   depguard:
-    list-type: allowlist
-    include-go-root: false
     packages:
-      - github.com/spf13/cobra
-      - github.com/spf13/pflag
-      - github.com/inconshreveable/mousetrap
-    rules:
-      main: deny
-      files:
-        - $golang.org/x/net
-        - golang.org/x/sys
-      allow:
-        - $golang.org/x/net/idna
-        - $golang.org/x/net/publicsuffix
-        - $golang.org/x/sys/unix
-    main:
-      - macconv/cmd
-      - macconv/pkg/*
       - github.com/spf13/cobra
       - github.com/spf13/pflag
       - github.com/inconshreveable/mousetrap
       - macconv/pkg/errors
       - macconv/pkg/logger
       - macconv/pkg/validator
+    rules:
+      cmd/:
+        allow:
+          - github.com/spf13/cobra
+          - macconv/pkg/errors
+          - macconv/pkg/logger
+      cmd/root.go:
+        allow:
+          - github.com/spf13/cobra
+          - macconv/pkg/logger
+      cmd/mac.go:
+        allow:
+          - github.com/spf13/cobra
+          - macconv/pkg/errors
+          - macconv/pkg/logger
+      cmd/ip.go:
+        allow:
+          - github.com/spf13/cobra
+          - macconv/pkg/errors
+          - macconv/pkg/logger
+      cmd/tcp.go:
+        allow:
+          - github.com/spf13/cobra
+          - macconv/pkg/logger
+      cmd/dhcp.go:
+        allow:
+          - github.com/spf13/cobra
+          - macconv/pkg/errors
+          - macconv/pkg/logger
+      cmd/version.go:
+        allow:
+          - github.com/spf13/cobra
+      pkg/validator/validator.go:
+        allow:
+          - macconv/pkg/errors
 
 linters:
   disable-all: true
