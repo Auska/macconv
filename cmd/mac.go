@@ -7,11 +7,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"macconv/pkg/errors"
+	"macconv/pkg/logger"
 )
 
 // macCmd represents the mac command
@@ -29,43 +30,64 @@ func init() {
 	rootCmd.AddCommand(macCmd)
 }
 
-func isValidMACAddress(mac string) bool {
+func normalizeMACAddress(mac string) string {
+	// Remove all separators and convert to lowercase
+	mac = strings.ReplaceAll(mac, "-", "")
+	mac = strings.ReplaceAll(mac, ".", "")
+	mac = strings.ReplaceAll(mac, ":", "")
+	return strings.ToLower(mac)
+}
+
+func validateMACAddress(mac string) error {
 	if len(mac) != 12 {
-		return false
+		return errors.New(errors.ValidationError, "MAC address must be 12 characters after normalization")
 	}
+	
 	pattern := `^[0-9a-f]{12}$`
 	re := regexp.MustCompile(pattern)
-	return re.MatchString(mac)
+	if !re.MatchString(mac) {
+		return errors.New(errors.ValidationError, "MAC address contains invalid characters")
+	}
+	
+	return nil
 }
 
 func getMacAddress(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
-		fmt.Println("Error: missing arguments.")
+		logger.PrintValidationError("missing MAC address argument")
 		cmd.Help()
-		os.Exit(1)
+		return
 	}
+	
 	origin := args[0]
+	logger.Debug("Processing MAC address: %s", origin)
+	
 	// Remove all separators and convert to lowercase
-	macAddress := strings.ReplaceAll(origin, "-", "")
-	macAddress = strings.ReplaceAll(macAddress, ".", "")
-	macAddress = strings.ReplaceAll(macAddress, ":", "")
-	macAddress = strings.ToLower(macAddress)
-
-	if !isValidMACAddress(macAddress) {
-		fmt.Println("Error: invalid mac address.")
+	macAddress := normalizeMACAddress(origin)
+	
+	if err := validateMACAddress(macAddress); err != nil {
+		logger.PrintErrorWithMessage("invalid MAC address", err)
 		cmd.Help()
-		os.Exit(1)
+		return
 	}
 
-	fmt.Println(macAddress)
-	fmt.Println(convertMacAddress(macAddress, 2, ":"))
-	fmt.Println(convertMacAddress(macAddress, 4, "."))
-	fmt.Println(convertMacAddress(macAddress, 4, "-"))
-
-	fmt.Println(strings.ToUpper(macAddress))
-	fmt.Println(strings.ToUpper(convertMacAddress(macAddress, 2, ":")))
-	fmt.Println(strings.ToUpper(convertMacAddress(macAddress, 4, ".")))
-	fmt.Println(strings.ToUpper(convertMacAddress(macAddress, 4, "-")))
+	// Output all MAC address formats
+	formats := []string{
+		macAddress,
+		convertMacAddress(macAddress, 2, ":"),
+		convertMacAddress(macAddress, 4, "."),
+		convertMacAddress(macAddress, 4, "-"),
+		strings.ToUpper(macAddress),
+		strings.ToUpper(convertMacAddress(macAddress, 2, ":")),
+		strings.ToUpper(convertMacAddress(macAddress, 4, ".")),
+		strings.ToUpper(convertMacAddress(macAddress, 4, "-")),
+	}
+	
+	for _, format := range formats {
+		fmt.Println(format)
+	}
+	
+	logger.Info("Successfully processed MAC address: %s", origin)
 }
 
 func convertMacAddress(mac string, step int, sep string) string {

@@ -8,10 +8,11 @@ package cmd
 import (
 	"fmt"
 	"net"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"macconv/pkg/errors"
+	"macconv/pkg/logger"
 )
 
 // dhcpCmd represents the dhcp command
@@ -98,27 +99,48 @@ func toACSFormatBytes(ips []net.IP) string {
 	return hexString
 }
 
-// 主函数用于测试
+// dhcp 处理 DHCP 选项 43 转换命令
 func dhcp(cmd *cobra.Command, args []string) {
-	var ips []net.IP
-	if len(args) != 1 && len(args) != 2 {
-		fmt.Println("Error: Invalid number of arguments. Expected 1 or 2 IP addresses.")
+	if len(args) < 1 || len(args) > 2 {
+		logger.PrintValidationError("invalid number of arguments, expected 1 or 2 IP addresses")
 		cmd.Help()
-		os.Exit(1)
+		return
 	}
 
-	for _, arg := range args {
-		ip := net.ParseIP(arg)
-		if ip == nil {
-			fmt.Printf("Error: Invalid IP address: %s\n", arg)
-			cmd.Help()
-			os.Exit(1)
-		}
-		ips = append(ips, ip)
+	ips, err := parseIPAddresses(args)
+	if err != nil {
+		logger.PrintErrorWithMessage("failed to parse IP addresses", err)
+		cmd.Help()
+		return
 	}
+
+	logger.Debug("Processing %d IP addresses for DHCP option 43", len(ips))
 
 	fmt.Println("PXE Format: ", toPXEFormat(ips))
 	fmt.Println("ACS Format: ", toACSFormat(ips))
 	fmt.Println("PXE Format (Bytes): ", toPXEFormatBytes(ips))
 	fmt.Println("ACS Format (Bytes): ", toACSFormatBytes(ips))
+	
+	logger.Info("Successfully processed DHCP option 43 conversion for %d IP addresses", len(ips))
+}
+
+// parseIPAddresses 解析并验证 IP 地址列表
+func parseIPAddresses(args []string) ([]net.IP, error) {
+	var ips []net.IP
+	
+	for _, arg := range args {
+		ip := net.ParseIP(arg)
+		if ip == nil {
+			return nil, errors.New(errors.ValidationError, fmt.Sprintf("invalid IP address: %s", arg))
+		}
+		
+		// 只支持 IPv4 地址
+		if ip.To4() == nil {
+			return nil, errors.New(errors.ValidationError, fmt.Sprintf("IPv6 address not supported: %s", arg))
+		}
+		
+		ips = append(ips, ip)
+	}
+	
+	return ips, nil
 }

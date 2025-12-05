@@ -8,11 +8,11 @@ package cmd
 import (
 	"fmt"
 	"net"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
+	"macconv/pkg/logger"
 )
 
 // tcpCmd represents the tcp command
@@ -30,48 +30,71 @@ func init() {
 	rootCmd.AddCommand(tcpCmd)
 }
 func checkPort(cmd *cobra.Command, args []string) {
-
 	if len(args) != 2 {
-		fmt.Printf("Error: missing arguments")
+		logger.PrintValidationError("missing arguments: IP address and port required")
 		cmd.Help()
-		os.Exit(1)
+		return
 	}
 
 	ipStr := args[0]
 	portStr := args[1]
-
-	if net.ParseIP(ipStr) == nil {
-		fmt.Printf("Error: invalid IP address.")
+	
+	ip := net.ParseIP(ipStr)
+	if ip == nil {
+		logger.PrintValidationError(fmt.Sprintf("invalid IP address: %s", ipStr))
 		cmd.Help()
-		os.Exit(1)
+		return
 	}
 
 	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		fmt.Printf("Error: invalid port.")
+	if err != nil || port < 1 || port > 65535 {
+		logger.PrintValidationError(fmt.Sprintf("invalid port number: %s", portStr))
 		cmd.Help()
-		os.Exit(1)
+		return
 	}
 
-	var target string
-	if net.ParseIP(ipStr).To4() == nil {
-		target = fmt.Sprintf("%s:%d", ipStr, port) // 默认使用IPv4格式
-	} else {
-		target = fmt.Sprintf("[%s]:%d", ipStr, port) // 如果是IPv6，则调整格式
-	}
-	count := 0
-	for count < 5 {
-		// 尝试连接到目标主机的指定端口
-		now := time.Now()
-		conn, err := net.DialTimeout("tcp", target, 2*time.Second)
-		if err != nil {
-			fmt.Printf("%v Port %d on %s is close\n", now.Format(time.RFC3339), port, ipStr)
-		} else {
-			fmt.Printf("%v Port %d on %s is open\n", now.Format(time.RFC3339), port, ipStr)
-			count++
-			conn.Close()
+	target := buildTargetAddress(ip, port)
+	logger.Info("Starting port check for %s:%d", ipStr, port)
+	
+	successCount := 0
+	maxAttempts := 5
+	
+	for i := 0; i < maxAttempts; i++ {
+		isOpen := checkSingleConnection(target, ipStr, port)
+		if isOpen {
+			successCount++
 		}
-		time.Sleep(time.Second)
-
+		
+		// 在最后一次检查后不需要等待
+		if i < maxAttempts-1 {
+			time.Sleep(time.Second)
+		}
 	}
+	
+	logger.Info("Port check completed: %d/%d successful connections", successCount, maxAttempts)
+}
+
+func buildTargetAddress(ip net.IP, port int) string {
+	if ip.To4() == nil {
+		// IPv6 地址需要用方括号包围
+		return fmt.Sprintf("[%s]:%d", ip.String(), port)
+	}
+	// IPv4 地址
+	return fmt.Sprintf("%s:%d", ip.String(), port)
+}
+
+func checkSingleConnection(target, ipStr string, port int) bool {
+	now := time.Now()
+	conn, err := net.DialTimeout("tcp", target, 2*time.Second)
+	
+	if err != nil {
+		logger.Debug("Connection failed to %s:%d: %v", ipStr, port, err)
+		fmt.Printf("%v Port %d on %s is closed\n", now.Format(time.RFC3339), port, ipStr)
+		return false
+	}
+	
+	defer conn.Close()
+	logger.Debug("Connection successful to %s:%d", ipStr, port)
+	fmt.Printf("%v Port %d on %s is open\n", now.Format(time.RFC3339), port, ipStr)
+	return true
 }
