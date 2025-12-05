@@ -24,7 +24,7 @@ Available Commands:
 
 Flags:
   -h, --help               help for macconv
-  -l, --log-level string   Set log level (debug, info, warn, error) (default "info")
+  -l, --log-level string   Set log level (debug, info, warn, error) (default "warn")
   -t, --toggle             Help message for toggle
 
 Use "macconv [command] --help" for more information about a command.

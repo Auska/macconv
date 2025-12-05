@@ -6,6 +6,7 @@ Copyright © 2024-2025 Auska <luodan0709@live.cn>
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -35,9 +36,18 @@ For example:
 	macconv tcp 192.168.1.1 22
 	macconv dhcp 192.168.1.1
 `,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		// 检查版本标志
+		if version, _ := cmd.PersistentFlags().GetBool("version"); version {
+			fmt.Printf("macconv version %s\n", appVersion)
+			fmt.Printf("Built on: %s\n", appBuildDate)
+			fmt.Printf("Author: LuoDan\n")
+			fmt.Printf("Email: luodan0709@live.cn\n")
+			os.Exit(0)
+		}
+		// 如果没有版本标志，显示帮助
+		cmd.Help()
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -50,8 +60,11 @@ func Execute() {
 }
 
 func init() {
+	// 版本标志
+	rootCmd.PersistentFlags().BoolP("version", "v", false, "Show version information")
+	
 	// 全局日志级别标志
-	rootCmd.PersistentFlags().StringP("log-level", "l", "info", "Set log level (debug, info, warn, error)")
+	rootCmd.PersistentFlags().StringP("log-level", "l", "warn", "Set log level (debug, info, warn, error)")
 	
 	// Cobra 也支持本地标志，这些标志只会在直接调用此操作时运行
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
@@ -73,8 +86,8 @@ func initLogger() {
 	case "error":
 		logger.DefaultLogger.SetLevel(logger.ERROR)
 	default:
-		logger.DefaultLogger.SetLevel(logger.INFO)
-		logger.Warn("Unknown log level: %s, using info level", logLevel)
+		logger.DefaultLogger.SetLevel(logger.WARN)
+		logger.Warn("Unknown log level: %s, using warn level", logLevel)
 	}
 	
 	logger.Debug("Logger initialized with level: %s", logLevel)
