@@ -124,27 +124,27 @@ func dhcp(cmd *cobra.Command, args []string) {
 	fmt.Println("ACS Format: ", toACSFormat(ips))
 	fmt.Println("PXE Format (Bytes): ", toPXEFormatBytes(ips))
 	fmt.Println("ACS Format (Bytes): ", toACSFormatBytes(ips))
-	
+
 	logger.Info("Successfully processed DHCP option 43 conversion for %d IP addresses", len(ips))
 }
 
 // parseIPAddresses 解析并验证 IP 地址列表
 func parseIPAddresses(args []string) ([]net.IP, error) {
 	var ips []net.IP
-	
+
 	for _, arg := range args {
 		ip := net.ParseIP(arg)
 		if ip == nil {
 			return nil, errors.New(errors.ValidationError, fmt.Sprintf("invalid IP address: %s", arg))
 		}
-		
+
 		// 只支持 IPv4 地址
 		if ip.To4() == nil {
 			return nil, errors.New(errors.ValidationError, fmt.Sprintf("IPv6 address not supported: %s", arg))
 		}
-		
+
 		ips = append(ips, ip)
 	}
-	
+
 	return ips, nil
 }

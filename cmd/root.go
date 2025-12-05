@@ -3,6 +3,8 @@ Copyright © 2024-2025 Auska <luodan0709@live.cn>
 
 */
 
+// Package cmd implements the command-line interface for the macconv application.
+// It provides commands for MAC address conversion, CIDR operations, port checking, and DHCP configuration.
 package cmd
 
 import (
@@ -15,7 +17,7 @@ import (
 
 // Version information
 var (
-	appVersion = "dev"
+	appVersion   = "dev"
 	appBuildDate = "unknown"
 )
 
@@ -64,20 +66,20 @@ func Execute() {
 func init() {
 	// 版本标志
 	rootCmd.PersistentFlags().BoolP("version", "v", false, "Show version information")
-	
+
 	// 全局日志级别标志
 	rootCmd.PersistentFlags().StringP("log-level", "l", "warn", "Set log level (debug, info, warn, error)")
-	
+
 	// Cobra 也支持本地标志，这些标志只会在直接调用此操作时运行
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	
+
 	// 设置日志级别
 	cobra.OnInitialize(initLogger)
 }
 
 func initLogger() {
 	logLevel, _ := rootCmd.PersistentFlags().GetString("log-level")
-	
+
 	switch logLevel {
 	case "debug":
 		logger.DefaultLogger.SetLevel(logger.DEBUG)
@@ -91,6 +93,6 @@ func initLogger() {
 		logger.DefaultLogger.SetLevel(logger.WARN)
 		logger.Warn("Unknown log level: %s, using warn level", logLevel)
 	}
-	
+
 	logger.Debug("Logger initialized with level: %s", logLevel)
 }

@@ -3,6 +3,8 @@ Copyright © 2024-2025 Auska <luodan0709@live.cn>
 
 */
 
+// Package errors provides unified error handling for the macconv application.
+// It defines custom error types and utilities for error wrapping and classification.
 package errors
 
 import (

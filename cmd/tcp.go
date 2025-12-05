@@ -45,17 +45,17 @@ func checkPort(cmd *cobra.Command, args []string) {
 
 	host := args[0]
 	portStr := args[1]
-	
+
 	// 解析主机名（可以是 IP 地址或域名）
-	ips, err := net.LookupIP(host)
-	if err != nil {
-		logger.PrintValidationError(fmt.Sprintf("failed to resolve hostname: %s - %v", host, err))
-		if err := cmd.Help(); err != nil {
-			logger.PrintErrorWithMessage("failed to show help", err)
+	ips, lookupErr := net.LookupIP(host)
+	if lookupErr != nil {
+		logger.PrintValidationError(fmt.Sprintf("failed to resolve hostname: %s - %v", host, lookupErr))
+		if helpErr := cmd.Help(); helpErr != nil {
+			logger.PrintErrorWithMessage("failed to show help", helpErr)
 		}
 		return
 	}
-	
+
 	if len(ips) == 0 {
 		logger.PrintValidationError(fmt.Sprintf("no IP addresses found for hostname: %s", host))
 		if err := cmd.Help(); err != nil {
@@ -63,31 +63,31 @@ func checkPort(cmd *cobra.Command, args []string) {
 		}
 		return
 	}
-	
+
 	// 使用第一个解析的 IP 地址
 	ip := ips[0]
 	logger.Debug("Resolved hostname %s to IP %s", host, ip.String())
 
-	port, err := strconv.Atoi(portStr)
-	if err != nil || port < 1 || port > 65535 {
+	port, portErr := strconv.Atoi(portStr)
+	if portErr != nil || port < 1 || port > 65535 {
 		logger.PrintValidationError(fmt.Sprintf("invalid port number: %s", portStr))
-		if err := cmd.Help(); err != nil {
-			logger.PrintErrorWithMessage("failed to show help", err)
+		if helpErr := cmd.Help(); helpErr != nil {
+			logger.PrintErrorWithMessage("failed to show help", helpErr)
 		}
 		return
 	}
 
 	target := buildTargetAddress(ip, port)
 	logger.Info("Starting continuous port check for %s (%s):%d (use Ctrl+C to stop)", host, ip.String(), port)
-	
+
 	attempt := 0
 	consecutiveSuccess := 0
 	requiredSuccess := 5
-	
+
 	for {
 		attempt++
 		isOpen := checkSingleConnection(target, host, port, attempt)
-		
+
 		if isOpen {
 			consecutiveSuccess++
 			if consecutiveSuccess < requiredSuccess {
@@ -100,7 +100,7 @@ func checkPort(cmd *cobra.Command, args []string) {
 		} else {
 			consecutiveSuccess = 0 // 重置连续成功计数
 		}
-		
+
 		// 等待1秒后再次检查
 		time.Sleep(time.Second)
 	}
@@ -118,7 +118,7 @@ func buildTargetAddress(ip net.IP, port int) string {
 func checkSingleConnection(target, host string, port int, attempt int) bool {
 	now := time.Now()
 	conn, err := net.DialTimeout("tcp", target, 2*time.Second)
-	
+
 	if err != nil {
 		logger.Debug("Connection failed to %s:%d (attempt %d): %v", host, port, attempt, err)
 		if isHostname(host) {
@@ -129,7 +129,7 @@ func checkSingleConnection(target, host string, port int, attempt int) bool {
 		}
 		return false
 	}
-	
+
 	defer func() {
 		if err := conn.Close(); err != nil {
 			logger.Debug("Error closing connection: %v", err)

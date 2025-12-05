@@ -42,13 +42,13 @@ func validateMACAddress(mac string) error {
 	if len(mac) != 12 {
 		return errors.New(errors.ValidationError, "MAC address must be 12 characters after normalization")
 	}
-	
+
 	pattern := `^[0-9a-f]{12}$`
 	re := regexp.MustCompile(pattern)
 	if !re.MatchString(mac) {
 		return errors.New(errors.ValidationError, "MAC address contains invalid characters")
 	}
-	
+
 	return nil
 }
 
@@ -60,13 +60,13 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 		}
 		return
 	}
-	
+
 	origin := args[0]
 	logger.Debug("Processing MAC address: %s", origin)
-	
+
 	// Remove all separators and convert to lowercase
 	macAddress := normalizeMACAddress(origin)
-	
+
 	if err := validateMACAddress(macAddress); err != nil {
 		logger.PrintErrorWithMessage("invalid MAC address", err)
 		if err := cmd.Help(); err != nil {
@@ -86,11 +86,11 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 		strings.ToUpper(convertMacAddress(macAddress, 4, ".")),
 		strings.ToUpper(convertMacAddress(macAddress, 4, "-")),
 	}
-	
+
 	for _, format := range formats {
 		fmt.Println(format)
 	}
-	
+
 	logger.Info("Successfully processed MAC address: %s", origin)
 }
 

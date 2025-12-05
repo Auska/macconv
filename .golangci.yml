@@ -36,21 +36,15 @@ linters-settings:
       - whyNoLint
       - wrapperFunc
   depguard:
-    list-type: blacklist
+    list-type: allowlist
     include-go-root: false
     packages:
-      - patterns:
-        # 允许的包和模块
-        - github.com/spf13/cobra
-        - github.com/spf13/pflag
-        - macconv/pkg/+
-    packages-with-error-messages:
-      # 明确允许的包
-      - github.com/spf13/cobra: "cobra framework is allowed"
-      - github.com/spf13/pflag: "pflag is allowed"
-      - macconv/pkg/errors: "internal errors package is allowed"
-      - macconv/pkg/logger: "internal logger package is allowed"
-      - macconv/pkg/validator: "internal validator package is allowed"
+      - github.com/spf13/cobra
+      - github.com/spf13/pflag
+      - macconv/pkg/errors
+      - macconv/pkg/logger
+      - macconv/pkg/validator
+      - macconv/cmd
 
 linters:
   disable-all: true

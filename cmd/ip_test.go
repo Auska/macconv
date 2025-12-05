@@ -14,10 +14,10 @@ import (
 
 func TestCalculateCIDRInfo(t *testing.T) {
 	tests := []struct {
-		name      string
-		cidr      string
-		wantErr   bool
-		expected  *CIDRInfo
+		name     string
+		cidr     string
+		wantErr  bool
+		expected *CIDRInfo
 	}{
 		{
 			name:    "Valid /24 network",
@@ -62,21 +62,21 @@ func TestCalculateCIDRInfo(t *testing.T) {
 			},
 		},
 		{
-			name:    "Invalid CIDR - no mask",
-			cidr:    "192.168.1.0",
-			wantErr: true,
+			name:     "Invalid CIDR - no mask",
+			cidr:     "192.168.1.0",
+			wantErr:  true,
 			expected: nil,
 		},
 		{
-			name:    "Invalid CIDR - invalid mask",
-			cidr:    "192.168.1.0/33",
-			wantErr: true,
+			name:     "Invalid CIDR - invalid mask",
+			cidr:     "192.168.1.0/33",
+			wantErr:  true,
 			expected: nil,
 		},
 		{
-			name:    "Invalid CIDR - invalid IP",
-			cidr:    "256.256.256.256/24",
-			wantErr: true,
+			name:     "Invalid CIDR - invalid IP",
+			cidr:     "256.256.256.256/24",
+			wantErr:  true,
 			expected: nil,
 		},
 	}
@@ -197,10 +197,10 @@ func TestCalculateInverseMask(t *testing.T) {
 
 func TestCalculateCIDRInfoIPv6(t *testing.T) {
 	tests := []struct {
-		name      string
-		cidr      string
-		wantErr   bool
-		expected  *CIDRInfo
+		name     string
+		cidr     string
+		wantErr  bool
+		expected *CIDRInfo
 	}{
 		{
 			name:    "Valid IPv6 /126 network",

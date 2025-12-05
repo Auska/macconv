@@ -38,10 +38,10 @@ func convertIPAddress(cmd *cobra.Command, args []string) {
 		}
 		return
 	}
-	
+
 	cidr := args[0]
 	logger.Debug("Processing CIDR address: %s", cidr)
-	
+
 	info, err := calculateCIDRInfo(cidr)
 	if err != nil {
 		logger.PrintErrorWithMessage("failed to parse CIDR address", err)
@@ -55,23 +55,24 @@ func convertIPAddress(cmd *cobra.Command, args []string) {
 	fmt.Println("Subnet Mask:", info.SubnetMask)
 	fmt.Println("Inverse Mask:", info.InverseMask)
 	fmt.Println("Network ID:", info.NetworkID)
-	
+
 	// IPv6 没有广播地址概念
 	if strings.Contains(info.NetworkID, ":") {
 		fmt.Println("Network Type: IPv6")
 	} else {
 		fmt.Println("Broadcast Address:", info.BroadcastAddress)
 	}
-	
+
 	// 显示主机数
 	if info.TotalHosts == -1 {
 		fmt.Println("Total Hosts: Very large number (>2^63)")
 	} else {
 		fmt.Println("Total Hosts:", info.TotalHosts)
 	}
-	
+
 	logger.Info("Successfully processed CIDR address: %s", cidr)
 }
+
 // CIDRInfo 包含 CIDR 网络信息
 type CIDRInfo struct {
 	NetworkID        string
@@ -91,32 +92,32 @@ func calculateCIDRInfo(cidr string) (*CIDRInfo, error) {
 
 	// 计算网络号
 	network := ip.Mask(ipnet.Mask)
-	
+
 	// 计算第一个可用IP（网络地址+1）
 	firstIP := net.IP(make([]byte, len(network)))
 	copy(firstIP, network)
 	if len(firstIP) == 4 { // IPv4
 		firstIP[3]++
 	}
-	
+
 	// 计算广播地址
 	broadcast := net.IP(make([]byte, len(network)))
 	copy(broadcast, network)
 	for i := range broadcast {
 		broadcast[i] |= ^ipnet.Mask[i]
 	}
-	
+
 	// 计算最后一个可用IP（广播地址-1）
 	lastIP := net.IP(make([]byte, len(broadcast)))
 	copy(lastIP, broadcast)
 	if len(lastIP) == 4 { // IPv4
 		lastIP[3]--
 	}
-	
+
 	// 计算总主机数
 	ones, bits := ipnet.Mask.Size()
 	var totalHosts int
-	
+
 	if bits == 32 { // IPv4
 		if ones == 32 {
 			// /32 网络只有1个主机
@@ -139,7 +140,7 @@ func calculateCIDRInfo(cidr string) (*CIDRInfo, error) {
 			totalHosts = 1 << hostBits
 		}
 	}
-	
+
 	// 计算反掩码
 	inverseMask := calculateInverseMask(ipnet.Mask)
 
@@ -159,11 +160,11 @@ func calculateInverseMask(mask net.IPMask) string {
 	if len(mask) != 4 && len(mask) != 16 {
 		return ""
 	}
-	
+
 	inverse := make(net.IPMask, len(mask))
 	for i := 0; i < len(mask); i++ {
 		inverse[i] = ^mask[i]
 	}
-	
+
 	return net.IP(inverse).String()
 }

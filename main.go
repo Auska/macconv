@@ -18,7 +18,7 @@ var (
 func main() {
 	// Set version information in cmd package
 	cmd.SetVersionInfo(version, buildDate)
-	
+
 	// Execute the command
 	cmd.Execute()
 }

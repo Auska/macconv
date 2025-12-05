@@ -3,6 +3,8 @@ Copyright © 2024-2025 Auska <luodan0709@live.cn>
 
 */
 
+// Package validator provides common validation utilities for the macconv application.
+// It includes validation functions for MAC addresses, IP addresses, ports, and other network-related inputs.
 package validator
 
 import (
@@ -18,13 +20,13 @@ func ValidateMACAddress(mac string) error {
 	if len(mac) != 12 {
 		return errors.New(errors.ValidationError, "MAC address must be 12 characters after normalization")
 	}
-	
+
 	pattern := `^[0-9a-f]{12}$`
 	re := regexp.MustCompile(pattern)
 	if !re.MatchString(mac) {
 		return errors.New(errors.ValidationError, "MAC address contains invalid characters")
 	}
-	
+
 	return nil
 }
 
@@ -74,11 +76,11 @@ func ValidateFilePath(filePath string) error {
 	if filePath == "" {
 		return errors.New(errors.ValidationError, "file path cannot be empty")
 	}
-	
+
 	// 检查路径长度
 	if len(filePath) > 4096 {
 		return errors.New(errors.ValidationError, "file path too long")
 	}
-	
+
 	return nil
 }

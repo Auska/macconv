@@ -3,6 +3,8 @@ Copyright © 2024-2025 Auska <luodan0709@live.cn>
 
 */
 
+// Package logger provides structured logging functionality for the macconv application.
+// It supports multiple log levels and formatted output.
 package logger
 
 import (
@@ -49,59 +51,80 @@ func (l *Logger) SetLevel(level LogLevel) {
 	l.level = level
 }
 
-// Debug 记录调试信息
-func (l *Logger) Debug(format string, v ...interface{}) {
+// Debugf 记录调试信息
+func (l *Logger) Debugf(format string, v ...interface{}) {
 	if l.level <= DEBUG {
 		l.logger.Printf("[DEBUG] "+format, v...)
 	}
 }
 
-// Info 记录信息
-func (l *Logger) Info(format string, v ...interface{}) {
+// Infof 记录信息
+func (l *Logger) Infof(format string, v ...interface{}) {
 	if l.level <= INFO {
 		l.logger.Printf("[INFO] "+format, v...)
 	}
 }
 
-// Warn 记录警告
-func (l *Logger) Warn(format string, v ...interface{}) {
+// Warnf 记录警告
+func (l *Logger) Warnf(format string, v ...interface{}) {
 	if l.level <= WARN {
 		l.logger.Printf("[WARN] "+format, v...)
 	}
 }
 
-// Error 记录错误
-func (l *Logger) Error(format string, v ...interface{}) {
+// Errorf 记录错误
+func (l *Logger) Errorf(format string, v ...interface{}) {
 	if l.level <= ERROR {
 		l.logger.Printf("[ERROR] "+format, v...)
 	}
 }
 
-// Fatal 记录致命错误并退出程序
-func (l *Logger) Fatal(format string, v ...interface{}) {
+// Fatalf 记录致命错误并退出程序
+func (l *Logger) Fatalf(format string, v ...interface{}) {
 	l.logger.Printf("[FATAL] "+format, v...)
 	os.Exit(1)
 }
 
 // 全局便捷函数
+func Debugf(format string, v ...interface{}) {
+	DefaultLogger.Debugf(format, v...)
+}
+
+func Infof(format string, v ...interface{}) {
+	DefaultLogger.Infof(format, v...)
+}
+
+func Warnf(format string, v ...interface{}) {
+	DefaultLogger.Warnf(format, v...)
+}
+
+func Errorf(format string, v ...interface{}) {
+	DefaultLogger.Errorf(format, v...)
+}
+
+func Fatalf(format string, v ...interface{}) {
+	DefaultLogger.Fatalf(format, v...)
+}
+
+// 保持向后兼容的别名
 func Debug(format string, v ...interface{}) {
-	DefaultLogger.Debug(format, v...)
+	Debugf(format, v...)
 }
 
 func Info(format string, v ...interface{}) {
-	DefaultLogger.Info(format, v...)
+	Infof(format, v...)
 }
 
 func Warn(format string, v ...interface{}) {
-	DefaultLogger.Warn(format, v...)
+	Warnf(format, v...)
 }
 
 func Error(format string, v ...interface{}) {
-	DefaultLogger.Error(format, v...)
+	Errorf(format, v...)
 }
 
 func Fatal(format string, v ...interface{}) {
-	DefaultLogger.Fatal(format, v...)
+	Fatalf(format, v...)
 }
 
 // PrintError 打印错误信息
