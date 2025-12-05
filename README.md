@@ -17,7 +17,13 @@ Available Commands:
   completion  Generate the autocompletion script for the specified shell
   dhcp        DHCP option 43 conversion
   help        Help about any command
-  ip          CIDR mask conversion
+  ### CIDR 掩码转换
+
+```bash
+macconv ip 192.168.1.1/24
+```
+
+计算并显示 CIDR 地址范围、子网掩码、反掩码、网络 ID、广播地址和主机数量。
   mac         Convert mac address
   tcp         Check host port
   version     Print version.
