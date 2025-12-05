@@ -130,7 +130,11 @@ func checkSingleConnection(target, host string, port int, attempt int) bool {
 		return false
 	}
 	
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Debug("Error closing connection: %v", err)
+		}
+	}()
 	logger.Debug("Connection successful to %s:%d (attempt %d)", host, port, attempt)
 	if isHostname(host) {
 		ip := extractIPFromTarget(target)
