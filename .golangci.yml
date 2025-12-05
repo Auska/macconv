@@ -41,6 +41,7 @@ linters-settings:
     packages:
       - github.com/spf13/cobra
       - github.com/spf13/pflag
+      - github.com/inconshreveable/mousetrap
       - macconv/pkg/errors
       - macconv/pkg/logger
       - macconv/pkg/validator

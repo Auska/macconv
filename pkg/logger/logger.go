@@ -51,78 +51,86 @@ func (l *Logger) SetLevel(level LogLevel) {
 	l.level = level
 }
 
-// Debugf 记录调试信息
+// Debugf records debug information with formatting
 func (l *Logger) Debugf(format string, v ...interface{}) {
 	if l.level <= DEBUG {
 		l.logger.Printf("[DEBUG] "+format, v...)
 	}
 }
 
-// Infof 记录信息
+// Infof records information with formatting
 func (l *Logger) Infof(format string, v ...interface{}) {
 	if l.level <= INFO {
 		l.logger.Printf("[INFO] "+format, v...)
 	}
 }
 
-// Warnf 记录警告
+// Warnf records warning information with formatting
 func (l *Logger) Warnf(format string, v ...interface{}) {
 	if l.level <= WARN {
 		l.logger.Printf("[WARN] "+format, v...)
 	}
 }
 
-// Errorf 记录错误
+// Errorf records error information with formatting
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	if l.level <= ERROR {
 		l.logger.Printf("[ERROR] "+format, v...)
 	}
 }
 
-// Fatalf 记录致命错误并退出程序
+// Fatalf records fatal error with formatting and exits the program
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	l.logger.Printf("[FATAL] "+format, v...)
 	os.Exit(1)
 }
 
-// 全局便捷函数
+// Debugf records debug information using the default logger
 func Debugf(format string, v ...interface{}) {
 	DefaultLogger.Debugf(format, v...)
 }
 
+// Infof records information using the default logger
 func Infof(format string, v ...interface{}) {
 	DefaultLogger.Infof(format, v...)
 }
 
+// Warnf records warning information using the default logger
 func Warnf(format string, v ...interface{}) {
 	DefaultLogger.Warnf(format, v...)
 }
 
+// Errorf records error information using the default logger
 func Errorf(format string, v ...interface{}) {
 	DefaultLogger.Errorf(format, v...)
 }
 
+// Fatalf records fatal error using the default logger and exits
 func Fatalf(format string, v ...interface{}) {
 	DefaultLogger.Fatalf(format, v...)
 }
 
-// 保持向后兼容的别名
+// Debug records debug information using the default logger
 func Debug(format string, v ...interface{}) {
 	Debugf(format, v...)
 }
 
+// Info records information using the default logger
 func Info(format string, v ...interface{}) {
 	Infof(format, v...)
 }
 
+// Warn records warning information using the default logger
 func Warn(format string, v ...interface{}) {
 	Warnf(format, v...)
 }
 
+// Error records error information using the default logger
 func Error(format string, v ...interface{}) {
 	Errorf(format, v...)
 }
 
+// Fatal records fatal error using the default logger and exits
 func Fatal(format string, v ...interface{}) {
 	Fatalf(format, v...)
 }

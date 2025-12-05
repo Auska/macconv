@@ -115,7 +115,7 @@ func buildTargetAddress(ip net.IP, port int) string {
 	return fmt.Sprintf("%s:%d", ip.String(), port)
 }
 
-func checkSingleConnection(target, host string, port int, attempt int) bool {
+func checkSingleConnection(target string, host string, port int, attempt int) bool {
 	now := time.Now()
 	conn, err := net.DialTimeout("tcp", target, 2*time.Second)
 
