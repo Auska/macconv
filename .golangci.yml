@@ -45,7 +45,10 @@ linters-settings:
       - macconv/pkg/errors
       - macconv/pkg/logger
       - macconv/pkg/validator
+    main:
       - macconv/cmd
+      - macconv/pkg/*
+    allow-generated: true
 
 linters:
   disable-all: true
