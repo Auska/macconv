@@ -42,13 +42,24 @@ linters-settings:
       - github.com/spf13/cobra
       - github.com/spf13/pflag
       - github.com/inconshreveable/mousetrap
-      - macconv/pkg/errors
-      - macconv/pkg/logger
-      - macconv/pkg/validator
+    rules:
+      main: deny
+      files:
+        - $golang.org/x/net
+        - golang.org/x/sys
+      allow:
+        - $golang.org/x/net/idna
+        - $golang.org/x/net/publicsuffix
+        - $golang.org/x/sys/unix
     main:
       - macconv/cmd
       - macconv/pkg/*
-    allow-generated: true
+      - github.com/spf13/cobra
+      - github.com/spf13/pflag
+      - github.com/inconshreveable/mousetrap
+      - macconv/pkg/errors
+      - macconv/pkg/logger
+      - macconv/pkg/validator
 
 linters:
   disable-all: true
