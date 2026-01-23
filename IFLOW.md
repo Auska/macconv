@@ -24,14 +24,18 @@ macconv/
 │   ├── tcp.go        # 端口检查命令（支持域名和持续监控）
 │   ├── dhcp.go       # DHCP 选项 43 转换命令
 │   ├── version.go    # 版本信息命令
+│   ├── test_helpers.go # 测试辅助函数
 │   ├── mac_test.go   # MAC 地址转换测试
-│   └── ip_test.go    # CIDR 转换测试
+│   ├── ip_test.go    # CIDR 转换测试
+│   ├── tcp_test.go   # 端口检查测试
+│   └── dhcp_test.go  # DHCP 转换测试
 ├── pkg/              # 共享包目录
 │   ├── errors/       # 统一错误处理系统
 │   │   ├── errors.go
 │   │   └── errors_test.go
 │   ├── logger/       # 结构化日志记录系统
-│   │   └── logger.go
+│   │   ├── logger.go
+│   │   └── logger_test.go
 │   └── validator/    # 通用验证工具包
 │       ├── validator.go
 │       └── validator_test.go
@@ -225,26 +229,35 @@ macconv version
 - 通用的输入验证函数
 - MAC 地址、IP 地址、端口号、CIDR 格式验证
 - 文件路径安全验证
+- 包级正则表达式缓存优化性能
 
 ### 测试覆盖
-- 核心功能的单元测试
+- 核心功能的单元测试（使用 `unit` 构建标签）
 - 错误处理和边界条件测试
 - IPv4 和 IPv6 兼容性测试
+- 测试覆盖率：cmd/ 72.9%，pkg/errors 100%，pkg/logger 84.6%，pkg/validator 100%
+
+### 代码优化
+- 消除代码重复，统一使用 validator 包中的验证函数
+- 使用包级常量替代魔法数字
+- 正则表达式预编译避免重复编译
+- 移除未使用的函数和标志
 
 ## 开发约定
 
 1. **代码风格**: 遵循 Go 语言标准代码风格
 2. **版权信息**: 所有源文件包含版权声明 `Copyright © 2024-2025 Auska <luodan0709@live.cn>`
 3. **提交信息**: 使用英文提交信息
-4. **测试**: 使用 `go test ./pkg/...` 运行测试
+4. **测试**: 使用 `go test -tags=unit ./...` 运行测试
 5. **构建**: 使用 `go build` 并通过 `-ldflags="-s -w"` 减小二进制文件大小
 6. **代码质量**: 使用 golangci-lint 进行代码检查
 7. **日志级别**: 默认使用 warn 级别，避免过多输出
+8. **测试标签**: 单元测试使用 `//go:build unit` 标签
 
 ## 版本信息
 
-当前版本: 0.2.0  
-作者: LuoDan  
+当前版本: 0.2.0
+作者: LuoDan
 邮箱: luodan0709@live.cn
 
 ## 许可证
