@@ -15,15 +15,18 @@ import (
 	"macconv/pkg/errors"
 )
 
+var (
+	// macAddressPattern is the compiled regex pattern for MAC address validation
+	macAddressPattern = regexp.MustCompile(`^[0-9a-f]{12}$`)
+)
+
 // ValidateMACAddress 验证 MAC 地址格式
 func ValidateMACAddress(mac string) error {
 	if len(mac) != 12 {
 		return errors.New(errors.ValidationError, "MAC address must be 12 characters after normalization")
 	}
 
-	pattern := `^[0-9a-f]{12}$`
-	re := regexp.MustCompile(pattern)
-	if !re.MatchString(mac) {
+	if !macAddressPattern.MatchString(mac) {
 		return errors.New(errors.ValidationError, "MAC address contains invalid characters")
 	}
 

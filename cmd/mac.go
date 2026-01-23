@@ -7,12 +7,11 @@ package cmd
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"macconv/pkg/errors"
 	"macconv/pkg/logger"
+	"macconv/pkg/validator"
 )
 
 // macCmd represents the mac command
@@ -38,20 +37,6 @@ func normalizeMACAddress(mac string) string {
 	return strings.ToLower(mac)
 }
 
-func validateMACAddress(mac string) error {
-	if len(mac) != 12 {
-		return errors.New(errors.ValidationError, "MAC address must be 12 characters after normalization")
-	}
-
-	pattern := `^[0-9a-f]{12}$`
-	re := regexp.MustCompile(pattern)
-	if !re.MatchString(mac) {
-		return errors.New(errors.ValidationError, "MAC address contains invalid characters")
-	}
-
-	return nil
-}
-
 func getMacAddress(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		logger.PrintValidationError("missing MAC address argument")
@@ -67,7 +52,7 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 	// Remove all separators and convert to lowercase
 	macAddress := normalizeMACAddress(origin)
 
-	if err := validateMACAddress(macAddress); err != nil {
+	if err := validator.ValidateMACAddress(macAddress); err != nil {
 		logger.PrintErrorWithMessage("invalid MAC address", err)
 		if err := cmd.Help(); err != nil {
 			logger.PrintErrorWithMessage("failed to show help", err)

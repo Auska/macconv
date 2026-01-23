@@ -70,9 +70,6 @@ func init() {
 	// 全局日志级别标志
 	rootCmd.PersistentFlags().StringP("log-level", "l", "warn", "Set log level (debug, info, warn, error)")
 
-	// Cobra 也支持本地标志，这些标志只会在直接调用此操作时运行
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 	// 设置日志级别
 	cobra.OnInitialize(initLogger)
 }

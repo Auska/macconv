@@ -16,6 +16,10 @@ import (
 	"macconv/pkg/logger"
 )
 
+const (
+	requiredConsecutiveSuccesses = 5
+)
+
 // tcpCmd represents the tcp command
 var tcpCmd = &cobra.Command{
 	Use:   "tcp",
@@ -82,7 +86,6 @@ func checkPort(cmd *cobra.Command, args []string) {
 
 	attempt := 0
 	consecutiveSuccess := 0
-	requiredSuccess := 5
 
 	for {
 		attempt++
@@ -90,11 +93,11 @@ func checkPort(cmd *cobra.Command, args []string) {
 
 		if isOpen {
 			consecutiveSuccess++
-			if consecutiveSuccess < requiredSuccess {
-				fmt.Printf(" (%d/%d consecutive checks)\n", consecutiveSuccess, requiredSuccess)
+			if consecutiveSuccess < requiredConsecutiveSuccesses {
+				fmt.Printf(" (%d/%d consecutive checks)\n", consecutiveSuccess, requiredConsecutiveSuccesses)
 			} else {
-				fmt.Printf(" (%d/%d consecutive checks) - CONFIRMED\n", consecutiveSuccess, requiredSuccess)
-				logger.Info("Port %d on %s confirmed open after %d consecutive successful checks", port, host, requiredSuccess)
+				fmt.Printf(" (%d/%d consecutive checks) - CONFIRMED\n", consecutiveSuccess, requiredConsecutiveSuccesses)
+				logger.Info("Port %d on %s confirmed open after %d consecutive successful checks", port, host, requiredConsecutiveSuccesses)
 				break
 			}
 		} else {

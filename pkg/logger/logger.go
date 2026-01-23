@@ -151,18 +151,3 @@ func PrintErrorWithMessage(message string, err error) {
 func PrintValidationError(message string) {
 	Error("Validation error: %s", message)
 }
-
-// PrintNetworkError 打印网络错误
-func PrintNetworkError(message string, err error) {
-	Error("Network error: %s: %v", message, err)
-}
-
-// PrintFileSystemError 打印文件系统错误
-func PrintFileSystemError(message string, err error) {
-	Error("File system error: %s: %v", message, err)
-}
-
-// PrintParseError 打印解析错误
-func PrintParseError(message string, err error) {
-	Error("Parse error: %s: %v", message, err)
-}
