@@ -6,6 +6,7 @@ Copyright © 2024-2025 Auska <luodan0709@live.cn>
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
@@ -50,8 +51,14 @@ func checkPort(cmd *cobra.Command, args []string) {
 	host := args[0]
 	portStr := args[1]
 
+	// DNS 查询超时常量
+	const dnsTimeout = 5 * time.Second
+
 	// 解析主机名（可以是 IP 地址或域名）
-	ips, lookupErr := net.LookupIP(host)
+	ctx, cancel := context.WithTimeout(context.Background(), dnsTimeout)
+	defer cancel()
+	resolver := net.Resolver{}
+	ips, lookupErr := resolver.LookupIPAddr(ctx, host)
 	if lookupErr != nil {
 		logger.PrintValidationError(fmt.Sprintf("failed to resolve hostname: %s - %v", host, lookupErr))
 		if helpErr := cmd.Help(); helpErr != nil {
@@ -60,7 +67,13 @@ func checkPort(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if len(ips) == 0 {
+	// 将 []net.IPAddr 转为 []net.IP
+	ipAddrs := make([]net.IP, len(ips))
+	for i, addr := range ips {
+		ipAddrs[i] = addr.IP
+	}
+
+	if len(ipAddrs) == 0 {
 		logger.PrintValidationError(fmt.Sprintf("no IP addresses found for hostname: %s", host))
 		if err := cmd.Help(); err != nil {
 			logger.PrintErrorWithMessage("failed to show help", err)
@@ -69,7 +82,7 @@ func checkPort(cmd *cobra.Command, args []string) {
 	}
 
 	// 使用第一个解析的 IP 地址
-	ip := ips[0]
+	ip := ipAddrs[0]
 	logger.Debug("Resolved hostname %s to IP %s", host, ip.String())
 
 	port, portErr := strconv.Atoi(portStr)

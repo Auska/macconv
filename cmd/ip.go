@@ -90,14 +90,25 @@ func calculateCIDRInfo(cidr string) (*CIDRInfo, error) {
 		return nil, errors.Wrap(errors.ParseError, "invalid CIDR format", err)
 	}
 
+	// 获取掩码信息
+	ones, bits := ipnet.Mask.Size()
+
 	// 计算网络号
 	network := ip.Mask(ipnet.Mask)
 
-	// 计算第一个可用IP（网络地址+1）
+	// 计算第一个可用IP
 	firstIP := net.IP(make([]byte, len(network)))
 	copy(firstIP, network)
-	if len(firstIP) == 4 { // IPv4
-		firstIP[3]++
+
+	if bits == 32 { // IPv4
+		if ones == 32 {
+			// /32 单地址网络，FirstIP = NetworkID
+		} else if ones == 31 {
+			// /31 点对点链路（RFC 3021），两个地址均为主机地址
+		} else {
+			// 其他情况，FirstIP = NetworkID + 1
+			firstIP[3]++
+		}
 	}
 
 	// 计算广播地址
@@ -107,15 +118,22 @@ func calculateCIDRInfo(cidr string) (*CIDRInfo, error) {
 		broadcast[i] |= ^ipnet.Mask[i]
 	}
 
-	// 计算最后一个可用IP（广播地址-1）
+	// 计算最后一个可用IP
 	lastIP := net.IP(make([]byte, len(broadcast)))
 	copy(lastIP, broadcast)
-	if len(lastIP) == 4 { // IPv4
-		lastIP[3]--
+
+	if bits == 32 { // IPv4
+		if ones == 32 {
+			// /32 单地址网络，LastIP = BroadcastAddress
+		} else if ones == 31 {
+			// /31 点对点链路（RFC 3021），两个地址均为主机地址
+		} else {
+			// 其他情况，LastIP = BroadcastAddress - 1
+			lastIP[3]--
+		}
 	}
 
 	// 计算总主机数
-	ones, bits := ipnet.Mask.Size()
 	var totalHosts int
 
 	if bits == 32 { // IPv4

@@ -54,6 +54,12 @@ func TestCalculateCIDRInfo(t *testing.T) {
 			cidr:    "192.168.1.1/32",
 			wantErr: false,
 			check: func(t *testing.T, info *CIDRInfo) {
+				if info.FirstIP != "192.168.1.1" {
+					t.Errorf("FirstIP = %v, want 192.168.1.1", info.FirstIP)
+				}
+				if info.LastIP != "192.168.1.1" {
+					t.Errorf("LastIP = %v, want 192.168.1.1", info.LastIP)
+				}
 				if info.TotalHosts != 1 {
 					t.Errorf("TotalHosts = %v, want 1", info.TotalHosts)
 				}
@@ -64,13 +70,19 @@ func TestCalculateCIDRInfo(t *testing.T) {
 			cidr:    "192.168.1.0/31",
 			wantErr: false,
 			check: func(t *testing.T, info *CIDRInfo) {
+				if info.FirstIP != "192.168.1.0" {
+					t.Errorf("FirstIP = %v, want 192.168.1.0", info.FirstIP)
+				}
+				if info.LastIP != "192.168.1.1" {
+					t.Errorf("LastIP = %v, want 192.168.1.1", info.LastIP)
+				}
 				if info.TotalHosts != 2 {
 					t.Errorf("TotalHosts = %v, want 2", info.TotalHosts)
 				}
 			},
 		},
 		{
-			name:    "Valid IPv6 /64 network",
+			name:    "Valid IPv6 /32 network",
 			cidr:    "2001:db8::/32",
 			wantErr: false,
 			check: func(t *testing.T, info *CIDRInfo) {
