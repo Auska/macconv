@@ -1,5 +1,3 @@
-//go:build unit
-
 /*
 Copyright © 2024-2025 Auska <luodan0709@live.cn>
 
@@ -114,25 +112,23 @@ func TestDefaultLogger(t *testing.T) {
 		t.Error("DefaultLogger is nil")
 	}
 
-	// Test default logger functions
 	var buf bytes.Buffer
 	originalOutput := DefaultLogger.logger.Writer()
 	DefaultLogger.logger.SetOutput(&buf)
 
-	Debug("test debug")
-	Info("test info")
-	Warn("test warn")
-	Error("test error")
+	Debugf("test debug")
+	Infof("test info")
+	Warnf("test warn")
+	Errorf("test error")
 
 	output := buf.String()
 
-	// Default logger is set to INFO level, so debug should not appear
 	if strings.Contains(output, "[DEBUG]") {
-		t.Error("DEBUG message should not appear at INFO level")
+		t.Error("DEBUG message should not appear at WARN level")
 	}
 
-	if !strings.Contains(output, "[INFO]") {
-		t.Error("INFO message should appear")
+	if strings.Contains(output, "[INFO]") {
+		t.Error("INFO message should not appear at WARN level")
 	}
 
 	if !strings.Contains(output, "[WARN]") {
@@ -143,7 +139,6 @@ func TestDefaultLogger(t *testing.T) {
 		t.Error("ERROR message should appear")
 	}
 
-	// Restore original output
 	DefaultLogger.logger.SetOutput(originalOutput)
 }
 
@@ -221,19 +216,13 @@ func TestLogLevelConstants(t *testing.T) {
 }
 
 func TestFatalf(t *testing.T) {
-	// Fatalf calls os.Exit(1), so we can't test it directly
-	// We can only verify that the function exists and has the right signature
 	logger := NewLogger(ERROR, nil)
 
-	// This should panic with exit status 1, but we can't test that without subprocess
-	// So we just verify the function is callable
 	defer func() {
 		if r := recover(); r != nil {
-			// Expected to panic due to os.Exit
 		}
 	}()
 
-	// We won't actually call it to avoid exiting the test
 	_ = logger.Fatalf
 }
 

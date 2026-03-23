@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"strconv"
 	"strings"
 	"time"
 
@@ -19,9 +18,12 @@ import (
 
 const (
 	requiredConsecutiveSuccesses = 5
+	dnsTimeout                   = 5 * time.Second
+	connectionTimeout            = 2 * time.Second
+	retryInterval                = 1 * time.Second
+	maxCheckDuration             = 10 * time.Minute
 )
 
-// tcpCmd represents the tcp command
 var tcpCmd = &cobra.Command{
 	Use:   "tcp",
 	Short: "Check host port",
@@ -39,6 +41,7 @@ Use Ctrl+C to stop the check.`,
 func init() {
 	rootCmd.AddCommand(tcpCmd)
 }
+
 func checkPort(cmd *cobra.Command, args []string) {
 	if len(args) != 2 {
 		logger.PrintValidationError("missing arguments: IP address or hostname and port required")
@@ -51,12 +54,9 @@ func checkPort(cmd *cobra.Command, args []string) {
 	host := args[0]
 	portStr := args[1]
 
-	// DNS 查询超时常量
-	const dnsTimeout = 5 * time.Second
-
-	// 解析主机名（可以是 IP 地址或域名）
-	ctx, cancel := context.WithTimeout(context.Background(), dnsTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), maxCheckDuration)
 	defer cancel()
+
 	resolver := net.Resolver{}
 	ips, lookupErr := resolver.LookupIPAddr(ctx, host)
 	if lookupErr != nil {
@@ -67,7 +67,6 @@ func checkPort(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// 将 []net.IPAddr 转为 []net.IP
 	ipAddrs := make([]net.IP, len(ips))
 	for i, addr := range ips {
 		ipAddrs[i] = addr.IP
@@ -81,11 +80,10 @@ func checkPort(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// 使用第一个解析的 IP 地址
 	ip := ipAddrs[0]
-	logger.Debug("Resolved hostname %s to IP %s", host, ip.String())
+	logger.Debugf("Resolved hostname %s to IP %s", host, ip.String())
 
-	port, portErr := strconv.Atoi(portStr)
+	port, portErr := parsePort(portStr)
 	if portErr != nil || port < 1 || port > 65535 {
 		logger.PrintValidationError(fmt.Sprintf("invalid port number: %s", portStr))
 		if helpErr := cmd.Help(); helpErr != nil {
@@ -95,48 +93,65 @@ func checkPort(cmd *cobra.Command, args []string) {
 	}
 
 	target := buildTargetAddress(ip, port)
-	logger.Info("Starting continuous port check for %s (%s):%d (use Ctrl+C to stop)", host, ip.String(), port)
+	logger.Infof("Starting continuous port check for %s (%s):%d (use Ctrl+C to stop)", host, ip.String(), port)
 
 	attempt := 0
 	consecutiveSuccess := 0
 
 	for {
-		attempt++
-		isOpen := checkSingleConnection(target, host, port, attempt)
+		select {
+		case <-ctx.Done():
+			logger.Errorf("Port check timed out after %v", maxCheckDuration)
+			return
+		default:
+			attempt++
+			isOpen := checkSingleConnection(target, host, port, attempt)
 
-		if isOpen {
-			consecutiveSuccess++
-			if consecutiveSuccess < requiredConsecutiveSuccesses {
-				fmt.Printf(" (%d/%d consecutive checks)\n", consecutiveSuccess, requiredConsecutiveSuccesses)
+			if isOpen {
+				consecutiveSuccess++
+				if consecutiveSuccess < requiredConsecutiveSuccesses {
+					fmt.Printf(" (%d/%d consecutive checks)\n", consecutiveSuccess, requiredConsecutiveSuccesses)
+				} else {
+					fmt.Printf(" (%d/%d consecutive checks) - CONFIRMED\n", consecutiveSuccess, requiredConsecutiveSuccesses)
+					logger.Infof("Port %d on %s confirmed open after %d consecutive successful checks", port, host, requiredConsecutiveSuccesses)
+					return
+				}
 			} else {
-				fmt.Printf(" (%d/%d consecutive checks) - CONFIRMED\n", consecutiveSuccess, requiredConsecutiveSuccesses)
-				logger.Info("Port %d on %s confirmed open after %d consecutive successful checks", port, host, requiredConsecutiveSuccesses)
-				break
+				consecutiveSuccess = 0
 			}
-		} else {
-			consecutiveSuccess = 0 // 重置连续成功计数
-		}
 
-		// 等待1秒后再次检查
-		time.Sleep(time.Second)
+			time.Sleep(retryInterval)
+		}
 	}
+}
+
+func parsePort(portStr string) (int, error) {
+	var port int
+	for _, c := range portStr {
+		if c < '0' || c > '9' {
+			return 0, fmt.Errorf("invalid character in port")
+		}
+		port = port*10 + int(c-'0')
+		if port > 65535 {
+			return 0, fmt.Errorf("port exceeds maximum value")
+		}
+	}
+	return port, nil
 }
 
 func buildTargetAddress(ip net.IP, port int) string {
 	if ip.To4() == nil {
-		// IPv6 地址需要用方括号包围
 		return fmt.Sprintf("[%s]:%d", ip.String(), port)
 	}
-	// IPv4 地址
 	return fmt.Sprintf("%s:%d", ip.String(), port)
 }
 
 func checkSingleConnection(target string, host string, port, attempt int) bool {
 	now := time.Now()
-	conn, err := net.DialTimeout("tcp", target, 2*time.Second)
+	conn, err := net.DialTimeout("tcp", target, connectionTimeout)
 
 	if err != nil {
-		logger.Debug("Connection failed to %s:%d (attempt %d): %v", host, port, attempt, err)
+		logger.Debugf("Connection failed to %s:%d (attempt %d): %v", host, port, attempt, err)
 		if isHostname(host) {
 			ip := extractIPFromTarget(target)
 			fmt.Printf("%v [%d] Port %d on %s (%s) is closed\n", now.Format(time.RFC3339), attempt, port, host, ip)
@@ -147,11 +162,12 @@ func checkSingleConnection(target string, host string, port, attempt int) bool {
 	}
 
 	defer func() {
-		if err := conn.Close(); err != nil {
-			logger.Debug("Error closing connection: %v", err)
+		if closeErr := conn.Close(); closeErr != nil {
+			logger.Debugf("Error closing connection: %v", closeErr)
 		}
 	}()
-	logger.Debug("Connection successful to %s:%d (attempt %d)", host, port, attempt)
+
+	logger.Debugf("Connection successful to %s:%d (attempt %d)", host, port, attempt)
 	if isHostname(host) {
 		ip := extractIPFromTarget(target)
 		fmt.Printf("%v [%d] Port %d on %s (%s) is OPEN ✓", now.Format(time.RFC3339), attempt, port, host, ip)
@@ -161,20 +177,16 @@ func checkSingleConnection(target string, host string, port, attempt int) bool {
 	return true
 }
 
-// isHostname 判断输入是否是主机名（非IP地址）
 func isHostname(host string) bool {
 	return net.ParseIP(host) == nil
 }
 
-// extractIPFromTarget 从目标地址中提取IP部分
 func extractIPFromTarget(target string) string {
-	// 处理IPv6地址 [::1]:80 格式
 	if strings.HasPrefix(target, "[") {
 		if idx := strings.Index(target, "]"); idx != -1 {
 			return target[:idx+1]
 		}
 	}
-	// 处理IPv4地址 192.168.1.1:80 格式
 	if idx := strings.LastIndex(target, ":"); idx != -1 {
 		return target[:idx]
 	}

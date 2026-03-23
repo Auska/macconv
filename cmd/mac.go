@@ -14,7 +14,6 @@ import (
 	"macconv/pkg/validator"
 )
 
-// macCmd represents the mac command
 var macCmd = &cobra.Command{
 	Use:   "mac",
 	Short: "Convert mac address",
@@ -30,7 +29,6 @@ func init() {
 }
 
 func normalizeMACAddress(mac string) string {
-	// Remove all separators and convert to lowercase
 	mac = strings.ReplaceAll(mac, "-", "")
 	mac = strings.ReplaceAll(mac, ".", "")
 	mac = strings.ReplaceAll(mac, ":", "")
@@ -47,9 +45,8 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 	}
 
 	origin := args[0]
-	logger.Debug("Processing MAC address: %s", origin)
+	logger.Debugf("Processing MAC address: %s", origin)
 
-	// Remove all separators and convert to lowercase
 	macAddress := normalizeMACAddress(origin)
 
 	if err := validator.ValidateMACAddress(macAddress); err != nil {
@@ -60,27 +57,31 @@ func getMacAddress(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Output all MAC address formats
+	colonFormat := convertMacAddress(macAddress, 2, ":")
+	dotFormat := convertMacAddress(macAddress, 4, ".")
+	dashFormat := convertMacAddress(macAddress, 4, "-")
+
 	formats := []string{
 		macAddress,
-		convertMacAddress(macAddress, 2, ":"),
-		convertMacAddress(macAddress, 4, "."),
-		convertMacAddress(macAddress, 4, "-"),
+		colonFormat,
+		dotFormat,
+		dashFormat,
 		strings.ToUpper(macAddress),
-		strings.ToUpper(convertMacAddress(macAddress, 2, ":")),
-		strings.ToUpper(convertMacAddress(macAddress, 4, ".")),
-		strings.ToUpper(convertMacAddress(macAddress, 4, "-")),
+		strings.ToUpper(colonFormat),
+		strings.ToUpper(dotFormat),
+		strings.ToUpper(dashFormat),
 	}
 
 	for _, format := range formats {
 		fmt.Println(format)
 	}
 
-	logger.Info("Successfully processed MAC address: %s", origin)
+	logger.Infof("Successfully processed MAC address: %s", origin)
 }
 
 func convertMacAddress(mac string, step int, sep string) string {
 	var result strings.Builder
+	result.Grow(len(mac) + (len(mac)/step - 1))
 	for i := 0; i < len(mac); i += step {
 		if i > 0 {
 			result.WriteString(sep)

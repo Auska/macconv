@@ -10,19 +10,24 @@ package validator
 import (
 	"net"
 	"regexp"
-	"strconv"
+	"strings"
 
 	"macconv/pkg/errors"
 )
 
+const (
+	macAddressLength  = 12
+	maxFilePathLength = 4096
+	minPort           = 1
+	maxPort           = 65535
+)
+
 var (
-	// macAddressPattern is the compiled regex pattern for MAC address validation
 	macAddressPattern = regexp.MustCompile(`^[0-9a-f]{12}$`)
 )
 
-// ValidateMACAddress 验证 MAC 地址格式
 func ValidateMACAddress(mac string) error {
-	if len(mac) != 12 {
+	if len(mac) != macAddressLength {
 		return errors.New(errors.ValidationError, "MAC address must be 12 characters after normalization")
 	}
 
@@ -33,7 +38,6 @@ func ValidateMACAddress(mac string) error {
 	return nil
 }
 
-// ValidateIPAddress 验证 IP 地址格式
 func ValidateIPAddress(ip string) error {
 	if net.ParseIP(ip) == nil {
 		return errors.New(errors.ValidationError, "invalid IP address format")
@@ -41,7 +45,6 @@ func ValidateIPAddress(ip string) error {
 	return nil
 }
 
-// ValidateIPv4Address 验证 IPv4 地址格式
 func ValidateIPv4Address(ip string) error {
 	parsedIP := net.ParseIP(ip)
 	if parsedIP == nil {
@@ -53,19 +56,31 @@ func ValidateIPv4Address(ip string) error {
 	return nil
 }
 
-// ValidatePort 验证端口号
 func ValidatePort(portStr string) (int, error) {
-	port, err := strconv.Atoi(portStr)
+	port, err := parsePort(portStr)
 	if err != nil {
 		return 0, errors.New(errors.ValidationError, "port must be a number")
 	}
-	if port < 1 || port > 65535 {
+	if port < minPort || port > maxPort {
 		return 0, errors.New(errors.ValidationError, "port must be between 1 and 65535")
 	}
 	return port, nil
 }
 
-// ValidateCIDR 验证 CIDR 格式
+func parsePort(portStr string) (int, error) {
+	var port int
+	for _, c := range portStr {
+		if c < '0' || c > '9' {
+			return 0, errors.New(errors.ValidationError, "port must be a number")
+		}
+		port = port*10 + int(c-'0')
+		if port > maxPort {
+			return 0, errors.New(errors.ValidationError, "port must be between 1 and 65535")
+		}
+	}
+	return port, nil
+}
+
 func ValidateCIDR(cidr string) error {
 	_, _, err := net.ParseCIDR(cidr)
 	if err != nil {
@@ -74,15 +89,17 @@ func ValidateCIDR(cidr string) error {
 	return nil
 }
 
-// ValidateFilePath 验证文件路径
 func ValidateFilePath(filePath string) error {
 	if filePath == "" {
 		return errors.New(errors.ValidationError, "file path cannot be empty")
 	}
 
-	// 检查路径长度
-	if len(filePath) > 4096 {
+	if len(filePath) > maxFilePathLength {
 		return errors.New(errors.ValidationError, "file path too long")
+	}
+
+	if strings.Contains(filePath, "..") {
+		return errors.New(errors.ValidationError, "file path contains invalid traversal sequence")
 	}
 
 	return nil

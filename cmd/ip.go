@@ -40,7 +40,7 @@ func convertIPAddress(cmd *cobra.Command, args []string) {
 	}
 
 	cidr := args[0]
-	logger.Debug("Processing CIDR address: %s", cidr)
+	logger.Debugf("Processing CIDR address: %s", cidr)
 
 	info, err := calculateCIDRInfo(cidr)
 	if err != nil {
@@ -70,7 +70,7 @@ func convertIPAddress(cmd *cobra.Command, args []string) {
 		fmt.Println("Total Hosts:", info.TotalHosts)
 	}
 
-	logger.Info("Successfully processed CIDR address: %s", cidr)
+	logger.Infof("Successfully processed CIDR address: %s", cidr)
 }
 
 // CIDRInfo 包含 CIDR 网络信息

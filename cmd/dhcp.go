@@ -15,7 +15,6 @@ import (
 	"macconv/pkg/logger"
 )
 
-// dhcpCmd represents the dhcp command
 var dhcpCmd = &cobra.Command{
 	Use:   "dhcp",
 	Short: "DHCP option 43 conversion",
@@ -31,75 +30,72 @@ func init() {
 	rootCmd.AddCommand(dhcpCmd)
 }
 
-// 将单个IPv4地址转换为十六进制字符串
 func ipToHex(ip net.IP) string {
 	ip = ip.To4()
 	return fmt.Sprintf("%02x%02x%02x%02x", ip[0], ip[1], ip[2], ip[3])
 }
 
-// 将单个IPv4地址转换为每个字节的十六进制表示
 func ipToHexBytes(ip net.IP) string {
 	ip = ip.To4()
-	var hexBytes []string
-	for _, b := range ip {
-		hexBytes = append(hexBytes, fmt.Sprintf("0x%02x", b))
+	var sb strings.Builder
+	sb.Grow(14)
+	sb.WriteString(fmt.Sprintf("0x%02x", ip[0]))
+	for i := 1; i < 4; i++ {
+		sb.WriteString(fmt.Sprintf(" 0x%02x", ip[i]))
 	}
-	return strings.Join(hexBytes, " ")
+	return sb.String()
 }
 
-// 转换为PXE格式
 func toPXEFormat(ips []net.IP) string {
-	var hexString string
-	hexString += "80"                              // PXE format identifier
-	hexString += fmt.Sprintf("%02x", len(ips)*4+3) // Length of the following data
-	hexString += "0000"                            // Fixed value
-	hexString += fmt.Sprintf("%02x", len(ips))     // Number of IPs
+	var sb strings.Builder
+	sb.Grow(8 + len(ips)*8)
+	sb.WriteString("80")
+	sb.WriteString(fmt.Sprintf("%02x", len(ips)*4+3))
+	sb.WriteString("0000")
+	sb.WriteString(fmt.Sprintf("%02x", len(ips)))
 	for _, ip := range ips {
-		ipHex := ipToHex(ip)
-		hexString += ipHex
+		sb.WriteString(ipToHex(ip))
 	}
-	return hexString
+	return sb.String()
 }
 
-// 转换为ACS格式
 func toACSFormat(ips []net.IP) string {
-	var hexString string
-	hexString += "01"                            // ACS format identifier
-	hexString += fmt.Sprintf("%02x", len(ips)*4) // Length of the following data (each IP is 4 bytes)
+	var sb strings.Builder
+	sb.Grow(4 + len(ips)*8)
+	sb.WriteString("01")
+	sb.WriteString(fmt.Sprintf("%02x", len(ips)*4))
 	for _, ip := range ips {
-		ipHex := ipToHex(ip)
-		hexString += ipHex
+		sb.WriteString(ipToHex(ip))
 	}
-	return hexString
+	return sb.String()
 }
 
-// 转换为PXE格式（每个字节的十六进制表示）
 func toPXEFormatBytes(ips []net.IP) string {
-	var hexString string
-	hexString += "0x80"                               // PXE format identifier
-	hexString += fmt.Sprintf(" 0x%02x", len(ips)*4+3) // Length of the following data
-	hexString += " 0x00 0x00"                         // Fixed value
-	hexString += fmt.Sprintf(" 0x%02x", len(ips))     // Number of IPs
+	var sb strings.Builder
+	sb.Grow(20 + len(ips)*15)
+	sb.WriteString("0x80")
+	sb.WriteString(fmt.Sprintf(" 0x%02x", len(ips)*4+3))
+	sb.WriteString(" 0x00 0x00")
+	sb.WriteString(fmt.Sprintf(" 0x%02x", len(ips)))
 	for _, ip := range ips {
-		ipHex := ipToHexBytes(ip)
-		hexString += " " + ipHex
+		sb.WriteString(" ")
+		sb.WriteString(ipToHexBytes(ip))
 	}
-	return hexString
+	return sb.String()
 }
 
-// 转换为ACS格式（每个字节的十六进制表示）
 func toACSFormatBytes(ips []net.IP) string {
-	var hexString string
-	hexString += "0x01"                             // ACS format identifier
-	hexString += fmt.Sprintf(" 0x%02x", len(ips)*4) // Length of the following data (each IP is 4 bytes)
+	var sb strings.Builder
+	sb.Grow(8 + len(ips)*15)
+	sb.WriteString("0x01")
+	sb.WriteString(fmt.Sprintf(" 0x%02x", len(ips)*4))
 	for _, ip := range ips {
-		ipHex := ipToHexBytes(ip)
-		hexString += " " + ipHex
+		sb.WriteString(" ")
+		sb.WriteString(ipToHexBytes(ip))
 	}
-	return hexString
+	return sb.String()
 }
 
-// dhcp 处理 DHCP 选项 43 转换命令
 func dhcp(cmd *cobra.Command, args []string) {
 	if len(args) < 1 || len(args) > 2 {
 		logger.PrintValidationError("invalid number of arguments, expected 1 or 2 IP addresses")
@@ -118,19 +114,18 @@ func dhcp(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	logger.Debug("Processing %d IP addresses for DHCP option 43", len(ips))
+	logger.Debugf("Processing %d IP addresses for DHCP option 43", len(ips))
 
 	fmt.Println("PXE Format: ", toPXEFormat(ips))
 	fmt.Println("ACS Format: ", toACSFormat(ips))
 	fmt.Println("PXE Format (Bytes): ", toPXEFormatBytes(ips))
 	fmt.Println("ACS Format (Bytes): ", toACSFormatBytes(ips))
 
-	logger.Info("Successfully processed DHCP option 43 conversion for %d IP addresses", len(ips))
+	logger.Infof("Successfully processed DHCP option 43 conversion for %d IP addresses", len(ips))
 }
 
-// parseIPAddresses 解析并验证 IP 地址列表
 func parseIPAddresses(args []string) ([]net.IP, error) {
-	var ips []net.IP
+	ips := make([]net.IP, 0, len(args))
 
 	for _, arg := range args {
 		ip := net.ParseIP(arg)
@@ -138,7 +133,6 @@ func parseIPAddresses(args []string) ([]net.IP, error) {
 			return nil, errors.New(errors.ValidationError, fmt.Sprintf("invalid IP address: %s", arg))
 		}
 
-		// 只支持 IPv4 地址
 		if ip.To4() == nil {
 			return nil, errors.New(errors.ValidationError, fmt.Sprintf("IPv6 address not supported: %s", arg))
 		}

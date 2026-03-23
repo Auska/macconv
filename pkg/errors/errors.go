@@ -11,28 +11,21 @@ import (
 	"fmt"
 )
 
-// ErrorType 定义错误类型
 type ErrorType int
 
 const (
-	// ValidationError 验证错误
 	ValidationError ErrorType = iota
-	// NetworkError 网络错误
 	NetworkError
-	// FileSystemError 文件系统错误
 	FileSystemError
-	// ParseError 解析错误
 	ParseError
 )
 
-// AppError 应用程序错误
 type AppError struct {
 	Type    ErrorType
 	Message string
 	Err     error
 }
 
-// Error 实现error接口
 func (e *AppError) Error() string {
 	if e.Err != nil {
 		return fmt.Sprintf("%s: %v", e.Message, e.Err)
@@ -40,12 +33,10 @@ func (e *AppError) Error() string {
 	return e.Message
 }
 
-// Unwrap 支持errors.Unwrap
 func (e *AppError) Unwrap() error {
 	return e.Err
 }
 
-// New 创建新的应用程序错误
 func New(errorType ErrorType, message string) *AppError {
 	return &AppError{
 		Type:    errorType,
@@ -53,7 +44,6 @@ func New(errorType ErrorType, message string) *AppError {
 	}
 }
 
-// Wrap 包装已有错误
 func Wrap(errorType ErrorType, message string, err error) *AppError {
 	return &AppError{
 		Type:    errorType,
@@ -62,34 +52,25 @@ func Wrap(errorType ErrorType, message string, err error) *AppError {
 	}
 }
 
-// IsValidationError 检查是否为验证错误
+func isErrorType(err error, errorType ErrorType) bool {
+	if appErr, ok := err.(*AppError); ok {
+		return appErr.Type == errorType
+	}
+	return false
+}
+
 func IsValidationError(err error) bool {
-	if appErr, ok := err.(*AppError); ok {
-		return appErr.Type == ValidationError
-	}
-	return false
+	return isErrorType(err, ValidationError)
 }
 
-// IsNetworkError 检查是否为网络错误
 func IsNetworkError(err error) bool {
-	if appErr, ok := err.(*AppError); ok {
-		return appErr.Type == NetworkError
-	}
-	return false
+	return isErrorType(err, NetworkError)
 }
 
-// IsFileSystemError 检查是否为文件系统错误
 func IsFileSystemError(err error) bool {
-	if appErr, ok := err.(*AppError); ok {
-		return appErr.Type == FileSystemError
-	}
-	return false
+	return isErrorType(err, FileSystemError)
 }
 
-// IsParseError 检查是否为解析错误
 func IsParseError(err error) bool {
-	if appErr, ok := err.(*AppError); ok {
-		return appErr.Type == ParseError
-	}
-	return false
+	return isErrorType(err, ParseError)
 }

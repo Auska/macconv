@@ -146,6 +146,10 @@ func TestValidateFilePath(t *testing.T) {
 		{"Valid relative path", "./test.txt", false},
 		{"Empty path", "", true},
 		{"Too long path", string(make([]byte, 4097)), true},
+		{"Path traversal", "/tmp/../etc/passwd", true},
+		{"Path traversal relative", "../etc/passwd", true},
+		{"Complex path traversal", "/tmp/../../etc/passwd", true},
+		{"Path with dots in filename", "/tmp/..backup/test.txt", true},
 	}
 
 	for _, tt := range tests {
